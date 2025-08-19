@@ -29,6 +29,7 @@ const authMiddleware = require('./middleware/authMiddleware');
 dotenv.config();
 
 const app = express();
+const HOST = '0.0.0.0';
 const PORT = process.env.PORT || 5000;
 
 const corsOptions = {
@@ -64,6 +65,6 @@ app.use('/api/expense-categories', authMiddleware, expenseCategoryRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 
 // Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 Backend server berjalan di http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Backend server berjalan di http://${HOST}:${PORT}`);
 });
