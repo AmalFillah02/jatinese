@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   // Akan menyimpan password yang sudah di-hash, bukan teks asli
+  createdAt DateTime @default(now())
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String
+  phone     String   @unique // No. telepon unik untuk setiap pelanggan
+  address   String?  // Alamat bersifat opsional (ditandai dengan ?)
+  salesOrders SalesOrder[]
+}
+
+model Material {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String   @unique
+  stock     Float
+  unit      String //ex: "meter", "liter", "pcs"
+  bomItems  BomItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String   @unique
+  price     Float
+  stock     Int
+  bomItems  BomItem[]
+  productionOrders ProductionOrder[]
+  salesOrderItems SalesOrderItem[]
+}
+
+model BomItem {
+  // Relasi ke Produk
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  // Relasi ke Material
+  materialId Int
+  material   Material @relation(fields: [materialId], references: [id])
+
+  // Jumlah material yang dibutuhkan
+  quantity   Float
+
+  // Membuat kombinasi productId dan materialId sebagai kunci unik
+  @@id([productId, materialId])
+}
+
+model ProductionOrder {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  quantity  Int      // Jumlah produk yang diproduksi
+
+  // Status produksi, contoh: "SELESAI", "DIPROSES", "DIBATALKAN"
+  status    String   @default("SELESAI") 
+}
+
+model SalesOrder {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  totalAmount Float // Total nilai pesanan
+
+  // Relasi ke detail item pesanan
+  items      SalesOrderItem[]
+  invoice    Invoice?
+}
+
+// BARU: Model untuk "detail" atau item-item dalam pesanan penjualan
+model SalesOrderItem {
+  id           Int @id @default(autoincrement())
+
+  salesOrderId Int
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id])
+
+  productId    Int
+  product      Product @relation(fields: [productId], references: [id])
+
+  quantity     Int   // Jumlah produk yang dipesan
+  price        Float // Harga produk pada saat dipesan
+}
+
+model Invoice {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  dueDate     DateTime // Tanggal jatuh tempo
+
+  salesOrderId Int      @unique // Setiap pesanan hanya punya satu faktur
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id])
+
+  // Status: DRAFT, SENT, PAID, OVERDUE
+  status      String   @default("DRAFT")
+  amount      Float    // Jumlah tagihan
+
+  // Relasi ke pembayaran
+  payments    Payment[]
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+
+  invoiceId   Int
+  invoice     Invoice @relation(fields: [invoiceId], references: [id])
+
+  amount      Float    // Jumlah yang dibayar
+  method      String   // Metode pembayaran: "CASH", "TRANSFER", dll.
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String
+  position  String   // Jabatan, e.g., "Tukang Kayu", "Admin Penjualan"
+  phone     String   @unique
+  joinDate  DateTime // Tanggal bergabung
+
+  // Status Karyawan: "AKTIF", "RESIGN", "CUTI"
+  status    String   @default("AKTIF")
+  salary    Float    @default(0)
+  payrollHistory PayrollHistory[]
+}
+
+model Supplier {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  name          String   @unique // Nama perusahaan pemasok
+  contactPerson String?  // Nama narahubung (opsional)
+  phone         String   @unique
+  address       String?  // Alamat pemasok (opsional)
+  purchaseOrders PurchaseOrder[]
+}
+
+model PurchaseOrder {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+
+  supplierId Int
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  totalAmount Float
+
+  // Status: DRAFT, ORDERED, RECEIVED, CANCELLED
+  status     String   @default("DIBUAT")
+
+  // Relasi ke detail item pesanan
+  items      PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              Int @id @default(autoincrement())
+
+  purchaseOrderId Int
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+  materialId      Int
+  material        Material @relation(fields: [materialId], references: [id])
+
+  quantity        Float // Jumlah bahan baku yang dibeli
+  price           Float // Harga bahan baku pada saat dibeli
+}
+
+model Expense {
+  id                Int      @id @default(autoincrement())
+  createdAt         DateTime @default(now()) // Tanggal pengeluaran
+  description       String   // Deskripsi pengeluaran
+  amount            Float    // Jumlah pengeluaran
+
+  expenseCategoryId Int
+  category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
+  payrollHistory PayrollHistory?
+}
+
+model ExpenseCategory {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique // e.g., "Gaji", "Listrik", "Sewa"
+
+  // Relasi ke detail pengeluaran
+  expenses  Expense[]
+}
+
+model PayrollHistory {
+  id         Int      @id @default(autoincrement())
+  
+  employeeId Int
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  
+  month      Int      // Bulan (misal: 8 untuk Agustus)
+  year       Int      // Tahun (misal: 2025)
+  
+  amountPaid Float    // Gaji yang dibayarkan
+  
+  expenseId  Int      @unique // Terhubung ke satu catatan pengeluaran
+  expense    Expense  @relation(fields: [expenseId], references: [id])
+
+  // Satu karyawan hanya bisa digaji sekali per bulan per tahun
+  @@unique([employeeId, month, year])
+}
