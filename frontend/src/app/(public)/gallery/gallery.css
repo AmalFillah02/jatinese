@@ -1,0 +1,119 @@
+/* src/app/(public)/gallery/gallery.css */
+.gallery-diagonal {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.gallery-section {
+  flex: 1; 
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  margin-left: -100px;
+  transition: flex 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0); /* Tidak apa-apa baris ini tetap ada */
+
+  /* --- FIX DEFINITIF DITAMBAHKAN DI SINI --- */
+  min-width: 100px; /* Mencegah panel menyusut hingga hilang */
+}
+
+.gallery-section:first-child {
+    margin-left: 0;
+}
+
+.gallery-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0; 
+  background-image: inherit; 
+  background-size: cover;
+  background-position: center;
+  transform: scale(1); 
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.gallery-diagonal:hover > .gallery-section {
+  flex: 0.5;
+}
+
+.gallery-diagonal > .gallery-section:hover {
+  flex: 0.6;
+}
+
+.gallery-section:hover::before {
+  transform: scale(1);
+}
+
+/* Sisa kode tetap sama */
+.overlay, .content, .opensea-btn, .content h2 {
+  /* ... tidak ada perubahan di sini ... */
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  z-index: 2;
+}
+
+.opensea-btn {
+  background: white;
+  color: black;
+  padding: 7px 14px;
+  border-radius: 15px;
+  font-size: 9px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.content h2 {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  /* Stack vertikal */
+  .gallery-diagonal {
+    flex-direction: column;
+    height: auto;            /* biar tinggi total mengikuti isi */
+  }
+
+  .gallery-section {
+    margin-left: 0;
+    width: 100%;
+    min-width: 100%;
+    flex: none;              /* jangan di-resize oleh hover */
+    height: 33.33vh;         /* 3 panel = kira-kira satu layar penuh; sesuaikan kalau perlu */
+    clip-path: none !important;  /* override inline style di JSX */
+  }
+
+  /* Matikan efek hover resize di mobile */
+  .gallery-diagonal:hover > .gallery-section,
+  .gallery-diagonal > .gallery-section:hover {
+    flex: none;
+  }
+
+  /* Sedikit turunkan ukuran teks */
+  .content h2 {
+    font-size: 20px;
+  }
+
+  /* Opsional: tonenya overlay bisa dibuat lebih ringan di layar kecil */
+  .overlay {
+    background: rgba(0, 0, 0, 0.15);
+  }
+}
