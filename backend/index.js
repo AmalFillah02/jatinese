@@ -30,12 +30,12 @@ const authMiddleware = require('./middleware/authMiddleware');
 dotenv.config();
 
 const app = express();
-const HOST = '0.0.0.0';
-const PORT = process.env.PORT || 5000;
+// ==========================================================
+//      PERBAIKAN PENTING UNTUK DEPLOYMENT
+// ==========================================================
+const HOST = '0.0.0.0'; // WAJIB: Agar bisa diakses dari luar container
+const PORT = process.env.PORT || 5000; // Gunakan port dari hosting, atau 5000 untuk lokal
 
-// ==========================================================
-//      PERBAIKAN DI SINI: Gunakan Environment Variable untuk Origin
-// ==========================================================
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -69,6 +69,7 @@ app.use('/api/expense-categories', authMiddleware, expenseCategoryRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 
 // Start Server
+// PERBAIKAN: Pastikan HOST disertakan di sini
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Backend server berjalan di http://${HOST}:${PORT}`);
 });
