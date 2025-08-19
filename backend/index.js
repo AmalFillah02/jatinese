@@ -22,7 +22,7 @@ const expenseCategoryRoutes = require('./routes/expenseCategories');
 const expenseRoutes = require('./routes/expenses');
 const reportRoutes = require('./routes/reports');
 const userRoutes = require('./routes/users');
-const publicRoutes = require('./routes/public');
+const publicRoutes = require('./routes/public'); // Pastikan ini diimpor
 
 // Impor middleware keamanan
 const authMiddleware = require('./middleware/authMiddleware');
@@ -30,12 +30,10 @@ const authMiddleware = require('./middleware/authMiddleware');
 dotenv.config();
 
 const app = express();
-// ==========================================================
-//      PERBAIKAN PENTING UNTUK DEPLOYMENT
-// ==========================================================
-const HOST = '0.0.0.0'; // WAJIB: Agar bisa diakses dari luar container
-const PORT = process.env.PORT || 5000; // Gunakan port dari hosting, atau 5000 untuk lokal
+const HOST = '0.0.0.0';
+const PORT = process.env.PORT || 5000;
 
+// PERBAIKAN: Gunakan Environment Variable untuk Origin
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -46,7 +44,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // Rute Publik (tidak perlu login)
-app.use('/api/public', publicRoutes);
+app.use('/api/public', publicRoutes); // Pastikan ini ada
 app.use('/api/auth', authRoutes);
 
 // Rute yang Dilindungi Middleware
@@ -69,7 +67,6 @@ app.use('/api/expense-categories', authMiddleware, expenseCategoryRoutes);
 app.use('/api/users', authMiddleware, userRoutes);
 
 // Start Server
-// PERBAIKAN: Pastikan HOST disertakan di sini
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Backend server berjalan di http://${HOST}:${PORT}`);
 });
