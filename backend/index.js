@@ -70,3 +70,5 @@ app.use('/api/users', authMiddleware, userRoutes);
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Backend server berjalan di http://${HOST}:${PORT}`);
 });
+
+module.exports = app;
