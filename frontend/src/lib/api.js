@@ -1,3 +1,5 @@
+//frontend/src/lib/api.js
+
 import Cookies from 'js-cookie';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
